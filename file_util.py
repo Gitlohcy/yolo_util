@@ -1,24 +1,29 @@
 from .general import *
-
+from .bbox_util import yolo2xyxy_2d
 
 #read files
 def yoloLabel_lines_2_list(img, yolo_lines):
     ih, iw , _ = img.shape
     yolo_lines = np.array(yolo_lines).astype('float')
-    yolo_lines[:, 1:5] = (yolo_lines[:, 1:5] * [iw, ih, iw, ih])
-    
+    bboxes = yolo_lines[:, 1:5]
+    bboxes = bboxes * [iw, ih, iw, ih]
+    bobxes = yolo2xyxy_2d(bboxes)
+
     return yolo_lines.astype('int')
 
-def f_readlines(fname, split_char=' '):
+def f_readlines(fname, split_char=None):
     with open(str(fname), 'r') as f:
         lines = f.read().splitlines()
 
-    return np.array([line.split(split_char) for line in lines])
+    if split_char:
+        return np.array([line.split(split_char) for line in lines])
+
+    return lines
 
 def f_readlabels(img, fname):
-    yolo_lines = f_readlines(fname)
-
+    yolo_lines = f_readlines(fname, split_char=' ')
     labels = yoloLabel_lines_2_list(img, yolo_lines)
+    
     return labels
 
 def lbl_from_img_name(lbl_dest, img_fname):
