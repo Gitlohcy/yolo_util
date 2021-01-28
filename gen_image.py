@@ -1,8 +1,8 @@
 import argparse
-from yolo_utils.general import *
-from yolo_utils.bbox_util import *
-import yolo_utils.imgaug_util as iu
-import yolo_utils.plot_util as pu
+from general import *
+from bbox_util import *
+import imgaug_util as iu
+import plot_util as pu
 
 import imageio
 import imgaug as ia
