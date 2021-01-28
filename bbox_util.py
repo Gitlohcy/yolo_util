@@ -13,3 +13,16 @@ def yolo2xyxy_2d(bboxes):
     y2 = y_mid + (h/2)
 
     return np.array([x1, y1, x2, y2]).transpose(1,0)
+
+def xyxy2yolo_2d(bboxes):
+    x1 = bboxes[:, 0]
+    y1 = bboxes[:, 1]
+    x2 = bboxes[:, 2]
+    y2 = bboxes[:, 3]
+    
+    w = x2 - x1
+    h = y2 - y1
+    x_mid = x1 + (w/2)
+    y_mid = x2 + (h/2)
+    
+    return np.array([x_mid, y_mid, w, h]).transpose(1,0)

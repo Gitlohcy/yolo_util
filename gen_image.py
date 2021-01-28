@@ -1,6 +1,6 @@
 import argparse
 from .general import *
-from .bbox_util import *
+from .bbox_util import yolo2xyxy_2d, xyxy2yolo_2d
 import .imgaug_util as iu
 import .plot_util as pu
 import .file_util as fu
@@ -339,13 +339,16 @@ def uniq_file_name(prefix=None):
     uniq_name = prefix + '_' + hex_name if prefix else  hex_name
     return uniq_name
 
-def list_2_yoloLabel_lines(img, yolo_bboxes):
+def list_2_yoloLabel_lines(img, labels_list):
     ih, iw , _ = img.shape
-    yolo_bboxes = np.array(yolo_bboxes).astype('float')
+    labels_list = np.array(labels_list).astype('float')
     
-    yolo_bboxes[:, 1:5]  = (yolo_bboxes[:, 1:5] / [iw, ih, iw, ih]).round(4)
-    str_lines = yolo_bboxes.astype('str')
-    return str_lines
+    bboxes = labels_list[:, 1:5] 
+    bboxes  = (bboxes / [iw, ih, iw, ih]).round(4)
+    bboxes = xyxy2yolo_2d(bboxes)
+
+    return labels_list.astype('str') #str lines
+
 
 def f_writelines(lines: List[str], fname, split_by=' '):
     lines = [split_by.join(list(line)) +'\n' for line in lines]

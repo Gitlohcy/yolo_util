@@ -1,5 +1,5 @@
 from .general import *
-from .bbox_util import yolo2xyxy_2d
+from .bbox_util import yolo2xyxy_2d, xyxy2yolo_2d
 
 #read files
 def yoloLabel_lines_2_list(img, yolo_lines):
@@ -23,7 +23,7 @@ def f_readlines(fname, split_char=None):
 def f_readlabels(img, fname):
     yolo_lines = f_readlines(fname, split_char=' ')
     labels = yoloLabel_lines_2_list(img, yolo_lines)
-    
+
     return labels
 
 def lbl_from_img_name(lbl_dest, img_fname):
