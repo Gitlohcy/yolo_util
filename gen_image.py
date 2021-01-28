@@ -1,8 +1,9 @@
 import argparse
-from general import *
-from bbox_util import *
-import imgaug_util as iu
-import plot_util as pu
+from .general import *
+from .bbox_util import *
+import .imgaug_util as iu
+import .plot_util as pu
+import .file_util as fu
 
 import imageio
 import imgaug as ia
@@ -365,6 +366,7 @@ def write_img_and_bboxes(img, labels, img_dest, lbl_dest):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--back-img-dir', type=str, default=None, help='path to background image')
+    parser.add_argument('--back-img-paths-txt', type=str, default=None, help='path to list of background image txt')
     parser.add_argument('--small-img-dir', type=str, default=None, help='path to image used for pasting')
     parser.add_argument('--coco-json', type=str, default=None, help='path to json file (small img labels)')
     parser.add_argument('--img-dest', type=str, default=Path.cwd()/'test_img_dir')
@@ -375,14 +377,13 @@ if __name__ == '__main__':
     
     opt = parser.parse_args()
 
-
-    back_img_dir = Path(opt.back_img_dir)
+    img_file_type = ['*.jpg', '*.png']
     small_img_dir = Path(opt.small_img_dir)
     img_dest = Path(opt.img_dest)
     lbl_dest = Path(opt.lbl_dest)
     coco_json = Path(opt.coco_json)
 
-    assert back_img_dir.is_dir(), 'back_img_dir is not a valid directory'
+    # assert back_img_dir.is_dir(), 'back_img_dir is not a valid directory'
     assert coco_json.is_file() and coco_json.suffix == '.json', 'coco_json is not a valid json file'
 
     if not img_dest.is_dir():
@@ -391,15 +392,20 @@ if __name__ == '__main__':
     if not lbl_dest.is_dir():
         lbl_dest.mkdir()
 
+    if opt.back_img_dir is not None:
+        back_img_dir = Path(opt.back_img_dir)
+        back_img_paths  = pd.Series(flat([back_img_dir.ls(img_type) for img_type in img_file_type]))
+    else:
+        back_img_paths_txt = Path(opt.back_img_paths_txt)
+        assert(back_img_paths_txt.is_file(), 'invalid back img paths defined')
+        back_img_paths = fu.f_readlines(back_img_paths_txt)
+        
 
 coco=COCO(str(coco_json))
 # img_n_masks = img_mask_cls_id__from_coco_obj(s1_horizontal, coco, 10)
 
 
 modified_back_imgs = []
-img_file_type = ['*.jpg', '*.png']
-back_img_paths  = pd.Series(flat([back_img_dir.ls(img_type) for img_type in img_file_type]))
-
 cls_name_map_dir = load_yaml(opt.cls_map)
 
 for i in range(opt.num2gen):
