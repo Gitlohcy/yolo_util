@@ -59,10 +59,10 @@ def list_2_yoloLabel_lines(img, labels_list):
 
 
 def f_writelines(lines: List[str], fname, join_by=None):
-    if join_by:
-        lines = [join_by.join(list(line)) +'\n' for line in lines]
-    else:
+    if join_by is None:
         lines = [str(line) + '\n' for line in lines]
+    else:
+        lines = [join_by.join(list(line)) +'\n' for line in lines]
 
     with open(str(fname), 'w') as f:
         f.writelines(lines)
