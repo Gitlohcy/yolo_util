@@ -400,7 +400,7 @@ if __name__ == '__main__':
         back_img_paths  = pd.Series(flat([back_img_dir.ls(img_type) for img_type in img_file_type]))
     else:
         back_img_paths_txt = Path(opt.back_img_paths_txt)
-        assert(back_img_paths_txt.is_file(), 'invalid back img paths defined')
+        assert back_img_paths_txt.is_file(), 'invalid back img paths defined'
         back_img_paths = fu.f_readlines(back_img_paths_txt)
         
 
