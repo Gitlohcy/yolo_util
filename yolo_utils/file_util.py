@@ -1,5 +1,6 @@
 from .general import *
 from .bbox_util import yolo2xyxy_2d, xyxy2yolo_2d
+import uuid
 
 #read files
 def yoloLabel_lines_2_list(img, yolo_lines):
@@ -38,13 +39,17 @@ def uniq_file_name(prefix=None):
     uniq_name = prefix + '_' + hex_name if prefix else  hex_name
     return uniq_name
 
-def list_2_yoloLabel_lines(img, yolo_bboxes):
+def list_2_yoloLabel_lines(img, labels_list):
     ih, iw , _ = img.shape
-    yolo_bboxes = np.array(yolo_bboxes).astype('float')
+    labels_list = np.array(labels_list).astype('float')
     
-    yolo_bboxes[:, 1:5]  = (yolo_bboxes[:, 1:5] / [iw, ih, iw, ih]).round(4)
-    str_lines = yolo_bboxes.astype('str')
-    return str_lines
+    bboxes = labels_list[:, 1:5] 
+    bboxes  = (bboxes / [iw, ih, iw, ih]).round(4)
+    bboxes = xyxy2yolo_2d(bboxes)
+    labels_list[:, 1:5] = bboxes
+
+    return labels_list.astype('str') #str lines
+
 
 def f_writelines(lines: List[str], fname, join_by=' '):
     lines = [join_by.join(list(line)) +'\n' for line in lines]

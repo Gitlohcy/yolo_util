@@ -333,44 +333,13 @@ def paste_mask_imgs_by_grid(big_img, small_imgs, small_img_segmaps):
                    
     return big_img, bboxes
 
-# write labels
-def uniq_file_name(prefix=None):
-    hex_name = uuid.uuid4().hex
-    uniq_name = prefix + '_' + hex_name if prefix else  hex_name
-    return uniq_name
-
-def list_2_yoloLabel_lines(img, labels_list):
-    ih, iw , _ = img.shape
-    labels_list = np.array(labels_list).astype('float')
-    
-    bboxes = labels_list[:, 1:5] 
-    bboxes  = (bboxes / [iw, ih, iw, ih]).round(4)
-    bboxes = xyxy2yolo_2d(bboxes)
-
-    return labels_list.astype('str') #str lines
-
-
-def f_writelines(lines: List[str], fname, split_by=' '):
-    lines = [split_by.join(list(line)) +'\n' for line in lines]
-    
-    with open(str(fname), 'w') as f:
-        f.writelines(lines)
-
-def write_img_and_bboxes(img, labels, img_dest, lbl_dest):
-    fname = uniq_file_name('img')
-    img_name = fname + '.jpg'
-    lbl_name = fname + '.txt'
-    
-    imageio.imwrite(img_dest/img_name, img)
-    yolo_lines = list_2_yoloLabel_lines(img, labels)
-    f_writelines(yolo_lines, lbl_dest/lbl_name)
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--back-img-dir', type=str, default=None, help='path to background image')
     parser.add_argument('--back-img-paths-txt', type=str, default=None, help='path to list of background image txt')
     parser.add_argument('--small-img-dir', type=str, default=None, help='path to image used for pasting')
+    parser.add_argument('--small-img-paths-txt', type=str, default=None, help='path to list of small image txt')
     parser.add_argument('--coco-json', type=str, default=None, help='path to json file (small img labels)')
     parser.add_argument('--img-dest', type=str, default=Path.cwd()/'test_img_dir')
     parser.add_argument('--lbl-dest', type=str, default=Path.cwd()/'test_lbl_dir')
@@ -381,7 +350,6 @@ if __name__ == '__main__':
     opt = parser.parse_args()
 
     img_file_type = ['*.jpg', '*.png']
-    small_img_dir = Path(opt.small_img_dir)
     img_dest = Path(opt.img_dest)
     lbl_dest = Path(opt.lbl_dest)
     coco_json = Path(opt.coco_json)
@@ -402,6 +370,14 @@ if __name__ == '__main__':
         back_img_paths_txt = Path(opt.back_img_paths_txt)
         assert back_img_paths_txt.is_file(), 'invalid back img paths defined'
         back_img_paths = fu.f_readlines(back_img_paths_txt)
+
+    if opt.small_img_dir is not None:
+        small_img_dir = Path(opt.small_img_dir)
+        small_img_paths  = pd.Series(flat([small_img_dir.ls(img_type) for img_type in img_file_type]))
+    else:
+        small_img_paths_txt = Path(opt.small_img_paths_txt)
+        assert small_img_paths_txt.is_file(), 'invalid small img paths defined'
+        small_img_paths = fu.f_readlines(small_img_paths_txt)
         
 
 coco=COCO(str(coco_json))
@@ -431,7 +407,7 @@ for i in range(opt.num2gen):
     
     back_img, bboxes = paste_mask_n_imgs_by_grid(back_img, new_img_masks_cls_id)
     
-    write_img_and_bboxes(back_img, bboxes, img_dest, lbl_dest)
+    fu.write_img_and_bboxes(back_img, bboxes, img_dest, lbl_dest)
 
 # cname = ['hundred_plus', 'cincau', 'mimi']
 # img_n_masks = img_n_mask_from_coco_obj(s1_horizontal, coco_h, 10, filter_cls_name=cname)
