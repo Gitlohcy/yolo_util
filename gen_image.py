@@ -381,7 +381,7 @@ if __name__ == '__main__':
         small_img_paths = fu.f_readlines(small_img_paths_txt)
         
 
-small_img_paths_dict = {p.name: p for p in small_img_paths}
+small_img_paths_dict = {p.name: p for p in list(map(Path, small_img_paths))}
 coco=COCO(str(coco_json))
 # img_n_masks = img_mask_cls_id__from_coco_obj(s1_horizontal, coco, 10)
 
