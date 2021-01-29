@@ -58,9 +58,12 @@ def list_2_yoloLabel_lines(img, labels_list):
     return labels_list.astype('str') #str lines
 
 
-def f_writelines(lines: List[str], fname, join_by=' '):
-    lines = [join_by.join(list(line)) +'\n' for line in lines]
-    
+def f_writelines(lines: List[str], fname, join_by=None):
+    if join_by:
+        lines = [join_by.join(list(line)) +'\n' for line in lines]
+    else:
+        lines = [str(line) + '\n' for line in lines]
+
     with open(str(fname), 'w') as f:
         f.writelines(lines)
 
@@ -71,4 +74,4 @@ def write_img_and_bboxes(img, labels, img_dest, lbl_dest):
     
     imageio.imwrite(img_dest/img_name, img)
     yolo_lines = list_2_yoloLabel_lines(img, labels)
-    f_writelines(yolo_lines, lbl_dest/lbl_name)
+    f_writelines(yolo_lines, lbl_dest/lbl_name, join_by=' ')
