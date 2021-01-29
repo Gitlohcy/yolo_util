@@ -2,6 +2,12 @@ from .general import *
 from .bbox_util import yolo2xyxy_2d, xyxy2yolo_2d
 import uuid
 
+import imageio
+import imgaug as ia
+from imgaug.augmentables.bbs import BoundingBox, BoundingBoxesOnImage
+from imgaug.augmentables.segmaps import SegmentationMapsOnImage
+import imgaug.augmenters as iaa
+
 #read files
 def yoloLabel_lines_2_list(img, yolo_lines):
     ih, iw , _ = img.shape
