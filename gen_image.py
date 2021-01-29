@@ -38,7 +38,7 @@ def get_rand_img_meta(coco: COCO, imgIds: List[int], n: int):
     chosen_img = list(pd.Series(imgIds).sample(n))
     return coco.loadImgs(chosen_img)
 
-def img_mask_cls_id__from_coco_obj(img_dir: Path, coco: COCO, n_img: int, cname_map_dir: dict, filter_cls_name: List=None):
+def img_mask_cls_id__from_coco_obj(img_paths_dict: dict, coco: COCO, n_img: int, cname_map_dir: dict, filter_cls_name: List=None):
 
     catIds = coco.getCatIds(catNms=filter_cls_name) if filter_cls_name else coco.getCatIds()
 
@@ -61,7 +61,8 @@ def img_mask_cls_id__from_coco_obj(img_dir: Path, coco: COCO, n_img: int, cname_
         
         img_id = ann['image_id']
         product_name = cname_map_dir.get(c_name)
-        img_path = img_dir/product_name/img_meta_dict[img_id]['file_name']
+        img_filename = img_meta_dict[img_id]['file_name']
+        img_path = img_paths_series[img_filename] #{'file_name' : 'file_path'}
         img = imageio.imread(img_path)
         
         mask = (coco.annToMask(ann) > 0)
@@ -373,13 +374,14 @@ if __name__ == '__main__':
 
     if opt.small_img_dir is not None:
         small_img_dir = Path(opt.small_img_dir)
-        small_img_paths  = pd.Series(flat([small_img_dir.ls(img_type) for img_type in img_file_type]))
+        small_img_paths  = flat([small_img_dir.ls(img_type) for img_type in img_file_type])
     else:
         small_img_paths_txt = Path(opt.small_img_paths_txt)
         assert small_img_paths_txt.is_file(), 'invalid small img paths defined'
         small_img_paths = fu.f_readlines(small_img_paths_txt)
         
 
+small_img_paths_dict = {p.name: p for p in small_img_paths}
 coco=COCO(str(coco_json))
 # img_n_masks = img_mask_cls_id__from_coco_obj(s1_horizontal, coco, 10)
 
@@ -388,7 +390,7 @@ modified_back_imgs = []
 cls_name_map_dir = load_yaml(opt.cls_map)
 
 for i in range(opt.num2gen):
-    img_n_masks = img_mask_cls_id__from_coco_obj(small_img_dir, coco, opt.paste_num, cls_name_map_dir)
+    img_n_masks = img_mask_cls_id__from_coco_obj(small_img_paths_dict, coco, opt.paste_num, cls_name_map_dir)
 
     new_img_masks_cls_id = []
     for small_img, segmap, cls_id in img_n_masks:
