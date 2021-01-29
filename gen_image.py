@@ -1,9 +1,9 @@
 import argparse
-from .general import *
-from .bbox_util import yolo2xyxy_2d, xyxy2yolo_2d
-import .imgaug_util as iu
-import .plot_util as pu
-import .file_util as fu
+from general import *
+from bbox_util import yolo2xyxy_2d, xyxy2yolo_2d
+import imgaug_util as iu
+import plot_util as pu
+import file_util as fu
 
 import imageio
 import imgaug as ia
