@@ -62,7 +62,7 @@ def img_mask_cls_id__from_coco_obj(img_paths_dict: dict, coco: COCO, n_img: int,
         img_id = ann['image_id']
         product_name = cname_map_dir.get(c_name)
         img_filename = img_meta_dict[img_id]['file_name']
-        img_path = img_paths_series[img_filename] #{'file_name' : 'file_path'}
+        img_path = img_paths_dict[img_filename] #{'file_name' : 'file_path'}
         img = imageio.imread(img_path)
         
         mask = (coco.annToMask(ann) > 0)
