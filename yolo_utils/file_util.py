@@ -1,5 +1,5 @@
 from .general import *
-from .bbox_util import yolo2xyxy_2d, xyxy2yolo_2d, xyxy2yolo
+from .bbox_util import xywh2xyxy, xyxy2xywh
 import uuid
 
 import imageio
@@ -14,7 +14,7 @@ def yoloLabel_lines_2_list(img, yolo_lines):
     yolo_lines = np.array(yolo_lines).astype('float')
     bboxes = yolo_lines[:, 1:5]
     bboxes = bboxes * [iw, ih, iw, ih]
-    bobxes = yolo2xyxy_2d(bboxes)
+    bboxes = xywh2xyxy(bboxes)
     yolo_lines[:, 1:5] = bboxes
 
     return yolo_lines.astype('int')
@@ -52,8 +52,7 @@ def list_2_yoloLabel_lines(img, labels_list):
     
     bboxes = labels_list[:, 1:5] 
     bboxes  = (bboxes / [iw, ih, iw, ih]).round(4)
-    bboxes = [xyxy2yolo(bbox) for bbox in bboxes]
-    # bboxes = xyxy2yolo_2d(bboxes)
+    bboxes = xyxy2xywh(bboxes)
     labels_list[:, 1:5] = bboxes
 
     return labels_list.astype('str') #str lines

@@ -1,6 +1,6 @@
 import argparse
 from yolo_utils.general import *
-from yolo_utils.bbox_util import yolo2xyxy_2d, xyxy2yolo_2d
+# from yolo_utils.bbox_util import xyxy2xywh, xywh2xyxy
 import yolo_utils.imgaug_util as iu
 import yolo_utils.plot_util as pu
 import yolo_utils.file_util as fu
