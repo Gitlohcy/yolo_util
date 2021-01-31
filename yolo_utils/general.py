@@ -74,6 +74,17 @@ def df_display_beside(dfs, names=[]):
     html_str = html_str.replace('table','table style="display:inline"')
     display_html(html_str, raw=True)
 
+def pd_display_max(row=20, col=10, show_all=False):
+    '''
+    if show_all, display all row and col,
+    ignore the row and col setting
+    '''
+    
+    if show_all:
+        pd.set_option('display.max_rows', None, 'display.max_columns', None)
+    else:
+        pd.set_option('display.max_rows', row, 'display.max_columns', col)
+
 
 Path.ls = ls
 Path.lls = lls
