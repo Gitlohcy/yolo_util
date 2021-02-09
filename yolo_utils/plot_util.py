@@ -20,17 +20,22 @@ def show_grid(images, max_rows=3, max_cols=3, figsize=(20,20), show_axis='off'):
     plt.subplots_adjust(wspace=.05, hspace=.05)
     plt.show()
 
-def show_batch(imgs, figsize=(20,20), axis="off"):
+def show_batch(imgs, figsize=(20,20), axis="off", titles=None):
+    '''Example:
+    show_batch(augmented_imgs,
+          titles=[img.shape for img in augmented_imgs])
+    '''
     plt.figure(figsize=figsize)
     img_l = len(imgs)
     sqrt = np.sqrt(img_l)
     row = np.ceil(sqrt).astype('int')
     col = np.floor(sqrt).astype('int')
-    
+
     for i in range(img_l):
-      ax = plt.subplot(row, col, i + 1)
-      plt.imshow(imgs[i])
-#       plt.title(class_names[predictions[i]])
-      plt.axis(axis)
+        ax = plt.subplot(row, col, i + 1)
+        plt.imshow(imgs[i])
+        if titles[i]:
+            plt.title(titles[i])
+    plt.axis(axis)
 
 
