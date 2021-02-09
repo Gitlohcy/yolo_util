@@ -20,7 +20,7 @@ def show_grid(images, max_rows=3, max_cols=3, figsize=(20,20), show_axis='off'):
     plt.subplots_adjust(wspace=.05, hspace=.05)
     plt.show()
 
-def show_batch(imgs, figsize=(20,20), axis="off", titles=None):
+def show_batch(imgs, figsize=(20,20), axis="off", titles=[]):
     '''Example:
     show_batch(augmented_imgs,
           titles=[img.shape for img in augmented_imgs])
@@ -31,11 +31,14 @@ def show_batch(imgs, figsize=(20,20), axis="off", titles=None):
     row = np.ceil(sqrt).astype('int')
     col = np.floor(sqrt).astype('int')
 
+    show_title = True if len(titles) == img_l else False
+    
     for i in range(img_l):
         ax = plt.subplot(row, col, i + 1)
         plt.imshow(imgs[i])
-        if titles[i]:
+        if show_title:
             plt.title(titles[i])
+
     plt.axis(axis)
 
 
