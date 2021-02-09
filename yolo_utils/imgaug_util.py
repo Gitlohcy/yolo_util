@@ -38,17 +38,8 @@ def show_bb(img, bbs, size=3):
 
 
 #--segmentatinon mask--
-# def get_seg_map(full_image, output_mask):
-#     '''create imgaug mask with np.array mask (h,w)'''
-#     boolean_outputMask = np.where((output_mask == 255), True, False)
-#     full_image_mask = np.zeros_like(full_image[:,:,0]) == 1 #set background mask to one channel image
-#     mh, mw = boolean_outputMask.shape[:2] #mask height, width
-#     full_image_mask[:mh, :mw] = boolean_outputMask #paste output mask on background mask
-    
-#     return SegmentationMapsOnImage(full_image_mask, shape=full_image.shape)
-def get_seg_map(img, bool_mask):
+def get_segmap(img, bool_mask):
     return SegmentationMapsOnImage(bool_mask, shape=img.shape)
-
 
 def save_mask(mask, dest, fname):
     fname = dest/(Path(fname).stem+ '.npy')
