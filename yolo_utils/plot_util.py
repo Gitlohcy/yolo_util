@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import cv2
 
 def show_grid(images, max_rows=3, max_cols=3, figsize=(20,20), show_axis='off'):
     '''
@@ -42,3 +43,22 @@ def show_batch(imgs, figsize=(20,20), axis="off", titles=[]):
     plt.axis(axis)
 
 
+#draw
+def draw_circle(image, center_coordinates, radius=5, color=(0, 0, 255), thickness=3, copy=False):
+    to_draw = image.copy() if copy else image
+    
+    center_coordinates = tuple(map(int, center_coordinates)) 
+    cv2.circle(to_draw, center_coordinates, radius, color, thickness)
+    
+    if copy:
+        return to_draw
+    
+def draw_line(image, xyxy, color=(0,0,0), thickness=2, copy=False):
+    to_draw = image.copy() if copy else image
+    
+    x1, y1, x2, y2 = list(map(int, xyxy))
+    cv2.line(to_draw, (x1, y1), (x2, y2), color, thickness=thickness)
+    
+    if copy:
+        return to_draw
+    
