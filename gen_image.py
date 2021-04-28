@@ -450,8 +450,6 @@ def run():
     }
 
     ## data distribution: num of front imgs in single back img
-    random.seed(123)
-
     n_products_dist = np.array(random.choices(
         range(1, 10), [4, 4.5, 3.5, 3, 1, 1, 1, 1, 1], k=10000))
     # ax = pd.DataFrame.from_dict(
