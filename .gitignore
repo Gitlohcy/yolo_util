@@ -1,3 +1,4 @@
 nbs/*
 yolo_utils/__pycache__
-
+img_dest/*
+lbl_dest/*
