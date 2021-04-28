@@ -1,0 +1,9 @@
+back_img: /Users/lohcy/Documents/AI_stuffs/datasets/coco128/images/train2017
+# back_img: '../test_back_img_paths.txt'
+front_img: /Users/lohcy/.darwin/datasets/silkronai/lightbox_china_1/images/train
+coco_path: /Users/lohcy/.darwin/datasets/silkronai/lightbox_china_1/releases/clean_coco.json
+
+img_dest: ./img_dest
+lbl_dest: ./lbl_dest
+
+
