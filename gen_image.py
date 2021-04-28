@@ -521,16 +521,19 @@ def run():
         test_pasted_bbs = np.array(pasted_bbs.bounding_boxes)
         clean_bbs = BoundingBoxesOnImage(
             test_pasted_bbs[~bbox_to_remove], pasted_back_img)
+        
 
-        pasted_back_img_list.append(pasted_back_img)
-        clean_bbs_list.append(clean_bbs)
+        bboxes = bbs_to_yoloList(clean_bbs)
+        fu.write_img_and_bboxes(pasted_back_img, bboxes, img_dest, lbl_dest)
 
-    # pu.show_batch([iu.draw_bb(img, bbs) 
-    #     for img, bbs in zip(pasted_back_img_list, clean_bbs_list)])
 
-    print(f"len(pasted_back_img_list):  {len(pasted_back_img_list)}")
-    print(f"len(clean_bbs_list)):  {len(clean_bbs_list)}")
 
+def bbs_to_yoloList(bbs: BoundingBoxesOnImage) -> List:
+    """convert object of BoundingBoxesOnImage into yolo format label"""
+    return np.column_stack((
+        [bb.label for bb in bbs.bounding_boxes],
+        bbs.to_xyxy_array())
+    ).astype('float32')
 
 if __name__ == '__main__':
     run()
