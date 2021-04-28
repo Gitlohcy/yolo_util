@@ -314,32 +314,44 @@ def mkdir_if_notExist(path, parents=True):
     if not path.is_dir():
         path.mkdir(parents=parents)
 
+def bbs_to_yoloList(bbs: BoundingBoxesOnImage) -> List:
+    """convert object of BoundingBoxesOnImage into yolo format label"""
+    return np.column_stack((
+        [bb.label for bb in bbs.bounding_boxes],
+        bbs.to_xyxy_array())
+    ).astype('float32')
+
+def img_list_from(img_path, img_file_type):
+
+    def from_recursive_dir(img_path):
+        return [p for p in img_path.rglob('*')
+                if p.suffix in img_file_type]
+
+    def from_paths_in_txt(img_path):
+        return fu.f_readlines(img_path)
+
+    if img_path.is_dir():
+        img_list = from_recursive_dir(img_path)
+
+    elif img_path.is_file() and img_path.suffix == '.txt':
+        img_list = from_paths_in_txt(img_path)
+
+    else:
+        raise ValueError(
+            'only list of Path and directory of imgs is supported')
+
+    return img_list
 
 def run():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--back-img-dir', type=str,
-                        default=None, help='path to background image')
-    parser.add_argument('--back-img-paths-txt', type=str,
-                        default=None, help='path to list of background image txt')
-    parser.add_argument('--small-img-dir', type=str,
-                        default=None, help='path to image used for pasting')
-    parser.add_argument('--small-img-paths-txt', type=str,
-                        default=None, help='path to list of small image txt')
-    parser.add_argument('--coco-json', type=str, default=None,
-                        help='path to json file (small img labels)')
-    parser.add_argument('--img-dest', type=str,
-                        default=Path.cwd()/'test_img_dir')
-    parser.add_argument('--lbl-dest', type=str,
-                        default=Path.cwd()/'test_lbl_dir')
     parser.add_argument('--num2gen', type=int, default=10,
                         help='num of image to generate')
-    parser.add_argument('--paste-num', type=int, default=8,
-                        help='nom of image to paste for each image generation')
-    parser.add_argument('--cls-map', type=str,
-                        help='yaml path to load cls_name mapping')
     parser.add_argument('--data', type=str,
                         help='yaml path to load data paths',
                         default='data.yaml')
+    # parser.add_argument('--paste-num', type=int, default=8,
+    #                     help='nom of image to paste for each image generation')
+    
     opt = parser.parse_args()
 
     with open(opt.data) as f:
@@ -357,27 +369,7 @@ def run():
     back_img_path = Path(data_dict['back_img'])
     front_img_path = Path(data_dict['front_img'])
 
-    def img_list_from(img_path, img_file_type):
-
-        def from_recursive_dir(img_path):
-            return [p for p in img_path.rglob('*')
-                    if p.suffix in img_file_type]
-
-        def from_paths_in_txt(img_path):
-            return fu.f_readlines(img_path)
-
-        if img_path.is_dir():
-            img_list = from_recursive_dir(img_path)
-
-        elif img_path.is_file() and img_path.suffix == '.txt':
-            img_list = from_paths_in_txt(img_path)
-
-        else:
-            raise ValueError(
-                'only list of Path and directory of imgs is supported')
-
-        return img_list
-
+   
     img_file_type = ['.jpg', '.png', '.jpeg']
     back_img_list = img_list_from(back_img_path, img_file_type)
     front_img_list = img_list_from(front_img_path, img_file_type)
@@ -452,13 +444,6 @@ def run():
     ## data distribution: num of front imgs in single back img
     n_products_dist = np.array(random.choices(
         range(1, 10), [4, 4.5, 3.5, 3, 1, 1, 1, 1, 1], k=10000))
-    # ax = pd.DataFrame.from_dict(
-    #         {i: (n_products_dist == i).sum() for i in range(1, 10)},
-    #         orient='index', columns=['num occurances']
-    #     ).plot.bar(rot=0)
-
-    # ax.set_xlabel("num of products pasted in same img")
-    # ax.plot()
 
     pasted_back_img_list = []
     clean_bbs_list = []
@@ -526,12 +511,7 @@ def run():
 
 
 
-def bbs_to_yoloList(bbs: BoundingBoxesOnImage) -> List:
-    """convert object of BoundingBoxesOnImage into yolo format label"""
-    return np.column_stack((
-        [bb.label for bb in bbs.bounding_boxes],
-        bbs.to_xyxy_array())
-    ).astype('float32')
+
 
 if __name__ == '__main__':
     run()
