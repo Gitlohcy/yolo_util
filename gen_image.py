@@ -566,8 +566,13 @@ def run():
                 )
 
     ## data distribution: num of front imgs in single back img
+    paste_dist = hyp_dict['paste_dist']
+    max_paste_n = hyp_dict['max_paste_n']
+    assert len(paste_dist) == max_paste_n, \
+        'length of paste_dist nid to be same with maximum paste num'
+
     n_products_dist = np.array(random.choices(
-        range(1, 10), [4, 4.5, 3.5, 3, 1, 1, 1, 1, 1], k=10000))
+        range(1, max_paste_n+1), paste_dist, k=10000))
 
     pasted_back_img_list = []
     clean_bbs_list = []

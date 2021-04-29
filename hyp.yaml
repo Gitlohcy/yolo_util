@@ -11,4 +11,7 @@ class_aug: 0.6  # chance for class level optional augmentation
 motion_blur_k: [5,20]   # kernel size range
 motion_blur_angle: [0, 360]   # range
 
+max_paste_n: 10   # maximum num of small images to paste in background
+paste_dist: [4, 4.5, 3.5, 3, 1, 1, 1, 1, 1, 1]  # weighted paste_n distribution
+                  
 
