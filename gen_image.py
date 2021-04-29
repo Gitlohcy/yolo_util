@@ -520,16 +520,16 @@ def run():
         children=iaa.Sequential([
             iaa.Sometimes(
                 0.8,
-                color_chnl_adjust(0, (-5,5)),
+                color_chnl_adjust(0, (-4,4)),
                 
             ),
             iaa.Sometimes(
                 0.8,
-                color_chnl_adjust(1, (-50,100))
+                color_chnl_adjust(1, (-20,80))
             ),
             iaa.Sometimes(
                 0.8,
-                color_chnl_adjust(2, (-60,60))
+                color_chnl_adjust(2, (-30,60))
             ),
         ])
     )
