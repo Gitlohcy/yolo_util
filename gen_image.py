@@ -482,7 +482,9 @@ def run():
 
    
     img_file_type = ['.jpg', '.png', '.jpeg']
+    print('reading back_img paths...')
     back_img_list = img_list_from(back_img_path, img_file_type)
+    print('reading front_img paths...')
     front_img_list = img_list_from(front_img_path, img_file_type)
     small_img_paths_dict = {p.name: p for p in list(map(Path, front_img_list))}
 
