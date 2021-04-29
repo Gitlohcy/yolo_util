@@ -615,7 +615,7 @@ def run():
         pasted_bbs = pasted_bbs.clip_out_of_image()
 
         ## remove overlap bbox
-        bbox_to_remove = remove_overlaped_bbox(0.8, augmented_small_imgs, padded_rand_coords, padded_back_img)
+        bbox_to_remove = remove_overlaped_bbox(0.75, augmented_small_imgs, padded_rand_coords, padded_back_img)
         test_pasted_bbs = np.array(pasted_bbs.bounding_boxes)
         clean_bbs = BoundingBoxesOnImage(
             test_pasted_bbs[~bbox_to_remove], pasted_back_img)
