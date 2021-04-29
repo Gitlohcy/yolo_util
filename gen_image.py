@@ -1,6 +1,5 @@
 import argparse
 import re
-from cyberbrain import trace
 import random
 from pycocotools.coco import COCO
 
@@ -65,6 +64,52 @@ def bbox_from_mask(bool_mask):
 
     return [x1, y1, x2, y2]
 
+def bbox_from_mask2(bool_mask):
+
+    mask_y, mask_x = np.array(np.where(bool_mask))
+
+    x1 = np.min(mask_x)
+    y1 = np.min(mask_y)
+    x2 = np.max(mask_x) + 1 # unsolve +1
+    y2 = np.max(mask_y) + 1 # unsolve +1
+
+
+    return [x1, y1, x2, y2]
+
+def part_of_img(img, bbox):
+    x1, y1, x2, y2 = bbox
+    return img[y1:y2, x1:x2, :]
+
+def bbox_from_pasted_mask2(small_img_bool_mask, big_img_paste_coord):
+
+    #tlbr on small img mask
+    s_x1, s_y1, s_x2, s_y2 = bbox_from_mask2(small_img_bool_mask)
+    
+    #coordinate of where small img mask paste on big img 
+    b_x1, b_y1 = big_img_paste_coord #top left xy
+    
+    #tlbr of big img mask (pasted with small img mask)
+    b_mask_x1 = b_x1 + s_x1
+    b_mask_y1 = b_y1 + s_y1
+    b_mask_x2 = b_x1 + s_x2
+    b_mask_y2 = b_y1 + s_y2
+    
+    return [b_mask_x1, b_mask_y1,b_mask_x2, b_mask_y2]
+
+def paste_into_img2(front_img, back_img, mid_xy, bool_mask=None):
+    
+    fih, fiw, _ = front_img.shape
+    bih, biw, _ = back_img.shape
+    
+    x1, y1, x2, y2 = list(map(int, xywh2xyxy([*tuple(mid_xy), fiw, fih])))
+    if isinstance(bool_mask, np.ndarray):
+        back_img[y1:y2, x1:x2, :][bool_mask] = front_img[bool_mask]
+        bbox = bbox_from_pasted_mask2(bool_mask, [x1,y1])
+    else:    
+        back_img[y1:y2, x1:x2, :] = front_img
+        bbox = [x1, y1, x2, y2]
+    
+    return back_img, bbox
 
 def crop_by_bbox(img, bbox, mask=None):
     x1, y1, x2, y2 = bbox
@@ -342,6 +387,72 @@ def img_list_from(img_path, img_file_type):
 
     return img_list
 
+
+#---motion blur---
+def thicken(mask_edge, iterations=2):
+    kernel = np.ones((3,3), np.uint8)
+    return cv2.dilate(mask_edge.astype('uint8'), kernel, iterations=iterations)
+
+def int_bb_arr(bb):
+    '''get int array of BoundingBox'''
+    return [bb.x1_int, bb.y1_int, bb.x2_int, bb.y2_int]
+
+def resolve_shape_rounding(a1, a2):
+    def until_shape(big_a, small_a):
+        return big_a[:small_a.shape[0], :small_a.shape[1]]
+
+    def solve_rounding(a1, a2, idx):
+        if a1.shape[idx] > a2.shape[idx]:
+            a1 = until_shape(a1, a2)
+        elif a1.shape[idx] < a2.shape[idx]:
+            a2 = until_shape(a2, a1)
+        return a1, a2
+    
+    if a1.ndim >= 2 and a2.ndim>=2:
+        #resolve arr size different
+        a1, a2 = solve_rounding(a1, a2, 0)
+        a1, a2 = solve_rounding(a1, a2, 1)                    
+    return a1, a2
+
+def aug_during_paste(back_img, bbox, bool_mask, aug_func, dilation=1.1, active_chance=0.8):
+
+    # is_active
+    if random.choices([True, False], weights=[active_chance, 1-active_chance], k=1)[0]:
+    
+        bbox = BoundingBox(*bbox)
+
+        if dilation < 1.0:
+            raise ValueError('dilation area need to >= 1 to cover the entire mask')
+        expanded_mask = iaa.Resize(dilation)(image=bool_mask)
+
+
+
+        expanded_bbox = BoundingBox(*bbox_from_mask2(expanded_mask))
+        half_w, half_h = (expanded_bbox.width/2), (expanded_bbox.height/2)
+        new_bbox = BoundingBox(*[
+            bbox.center_x-half_w, bbox.center_y-half_h,  # x1,y1
+            bbox.center_x+half_w, bbox.center_y+half_h   # x2,y2
+        ]).clip_out_of_image(back_img)
+
+    #     print(f"expanded_mask:  {expanded_mask.shape}")
+    #     print(f"expanded_bbox:  {expanded_bbox}")
+    #     print(f"new_bbox:  {new_bbox}")
+        part_img = part_of_img(back_img, int_bb_arr(new_bbox))
+
+
+        #solve rounding issue
+    #     print('shape_diff:', np.array(part_img.shape)[:1] - np.array(expanded_mask.shape)[:1])
+        part_img, expanded_mask = resolve_shape_rounding(part_img, expanded_mask)
+    #     print('shape_diff:', np.array(part_img.shape)[:1] - np.array(expanded_mask.shape)[:1])
+
+    #     if (part_img.shape[1] - expanded_mask.shape[1] != 0 or 
+    #         part_img.shape[0] - expanded_mask.shape[0] != 0):
+    #         st()
+
+        aug_img = aug_func(image=part_img.copy())
+        part_img[expanded_mask] = aug_img[expanded_mask]
+
+
 def run():
     parser = argparse.ArgumentParser()
     parser.add_argument('--num2gen', type=int, default=10,
@@ -441,6 +552,8 @@ def run():
         14: None,
     }
 
+    motion_blur = iaa.MotionBlur(k=(5,20), angle=(0, 360))
+
     ## data distribution: num of front imgs in single back img
     n_products_dist = np.array(random.choices(
         range(1, 10), [4, 4.5, 3.5, 3, 1, 1, 1, 1, 1], k=10000))
@@ -489,8 +602,10 @@ def run():
         ## pasting
         bboxes = []
         for i, (img, segmap, cls_id) in enumerate(augmented_small_imgs):
-            padded_back_img, bbox = paste_into_img(
-                img, padded_back_img, padded_rand_coords[i], (segmap.get_arr() > 0))
+            bool_mask = (segmap.get_arr()>0)
+            padded_back_img, bbox = paste_into_img2(
+                img, padded_back_img, padded_rand_coords[i], bool_mask)
+            aug_during_paste(padded_back_img, bbox, bool_mask, motion_blur)
             bboxes.append([*bbox, cls_id])
 
         ## crop
@@ -508,8 +623,6 @@ def run():
 
         bboxes = bbs_to_yoloList(clean_bbs)
         fu.write_img_and_bboxes(pasted_back_img, bboxes, img_dest, lbl_dest)
-
-
 
 
 
