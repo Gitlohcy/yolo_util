@@ -323,7 +323,6 @@ def remove_overlaped_bbox(thereshold: float, batch_labeled_imgs: list, rand_coor
 
 def append_selective_aug(aug_seqs: List, cls_id, aug_funcs_dict, chance=0.5):
     catId_related_aug = aug_funcs_dict.get(cls_id, None)
-
     if catId_related_aug:
         [aug_seqs.append(iaa.Sometimes(chance, aug))
              for aug in catId_related_aug]
@@ -460,13 +459,20 @@ def run():
     parser.add_argument('--data', type=str,
                         help='yaml path to load data paths',
                         default='data.yaml')
-    # parser.add_argument('--paste-num', type=int, default=8,
-    #                     help='nom of image to paste for each image generation')
+    parser.add_argument('--hyp', type=str,
+                        help='yaml path to load hyp paths',
+                        default='hyp.yaml')
+    
     
     opt = parser.parse_args()
 
     with open(opt.data) as f:
         data_dict = yaml.load(f, Loader=yaml.SafeLoader)
+
+    with open(opt.hyp) as f:
+        hyp_dict = yaml.load(f, Loader=yaml.SafeLoader)
+
+    print(f"hyp_dict['hsv_h'][1]:  {hyp_dict['hsv_h'][1]}")
 
     # input
     back_img_path = Path(data_dict['back_img'])
@@ -521,17 +527,17 @@ def run():
         from_colorspace="RGB",
         children=iaa.Sequential([
             iaa.Sometimes(
-                0.8,
-                color_chnl_adjust(0, (-4,4)),
+                hyp_dict['hsv_h'][0],
+                color_chnl_adjust(0, hyp_dict['hsv_h'][1]),
                 
             ),
             iaa.Sometimes(
-                0.8,
-                color_chnl_adjust(1, (-20,80))
+                hyp_dict['hsv_s'][0],
+                color_chnl_adjust(1, hyp_dict['hsv_s'][1])
             ),
             iaa.Sometimes(
-                0.8,
-                color_chnl_adjust(2, (-30,60))
+                hyp_dict['hsv_v'][0],
+                color_chnl_adjust(2, hyp_dict['hsv_v'][1])
             ),
         ])
     )
@@ -572,18 +578,18 @@ def run():
 
         # augmentation on small_imgs
         resize_seqs = [[
-            batch_resize((0.4, 0.8)),
+            batch_resize(hyp_dict['batch_resize']),
             depth_resize,
-            ] for depth_resize in depth_level_resize(len(img_segmap_cls), min_size=0.3)]
+            ] for depth_resize in depth_level_resize(len(img_segmap_cls), min_size=hyp_dict['depth_min_size'])]
 
         augmented_small_imgs = []
         for resize_seq, (img, segmap, cls_id) in zip(resize_seqs, img_segmap_cls):
             aug_seqs = [
                 *resize_seq,
-                iaa.Rotate((-360, 360)),
+                iaa.Rotate(hyp_dict['rotate']),
                 adjust_hsv,
             ]
-            aug_seqs = append_selective_aug(aug_seqs, cls_id, aug_funcs_dict, 0.6)
+            aug_seqs = append_selective_aug(aug_seqs, cls_id, aug_funcs_dict, hyp_dict['class_aug'])
             aug_seqs = iaa.Sequential(aug_seqs)
             augmented_img, augmented_segmap = aug_front_img(img, segmap, aug_seqs)
             augmented_small_imgs.append([augmented_img, augmented_segmap, cls_id])
@@ -617,7 +623,7 @@ def run():
         pasted_bbs = pasted_bbs.clip_out_of_image()
 
         ## remove overlap bbox
-        bbox_to_remove = remove_overlaped_bbox(0.75, augmented_small_imgs, padded_rand_coords, padded_back_img)
+        bbox_to_remove = remove_overlaped_bbox(hyp_dict['overlap_thereshold'], augmented_small_imgs, padded_rand_coords, padded_back_img)
         test_pasted_bbs = np.array(pasted_bbs.bounding_boxes)
         clean_bbs = BoundingBoxesOnImage(
             test_pasted_bbs[~bbox_to_remove], pasted_back_img)

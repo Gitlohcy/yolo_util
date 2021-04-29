@@ -1,0 +1,12 @@
+#     chance, (min, max)
+hsv_h: [0.8, [-4, 4]]   
+hsv_s: [0.8, [-20, 80]]
+hsv_v: [0.8, [-30, 60]]
+
+rotate: [-360, 360]   # (min, max)
+overlap_thereshold: 0.75  # thereshold to remove overlap bbox
+depth_min_size: 0.3   # minimum size depth level resize
+batch_resize: [0.4, 0.8]  # (min, max)
+class_aug: 0.6  # chance for class level optional augmentation
+
+
