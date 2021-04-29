@@ -520,10 +520,15 @@ def run():
 
 
     ## assign tuple for range between (min, max) in imgaug library
-    keys_with_range = ['rotate', 'batch_resize', 
-                        'motion_blur_k', 'motion_blur_angle']
+    keys_with_range = ['rotate', 'batch_resize']
     for c in 'hsv':
         hyp_dict['hsv_'+c][1] = tuple(hyp_dict['hsv_'+c][1])
+    
+    m_blur_chance = hyp_dict['motion_blur'][0]
+    m_blur_kernel = tuple(hyp_dict['motion_blur'][1])
+    m_blur_angle = tuple(hyp_dict['motion_blur'][2])
+
+
     for k in keys_with_range:
         hyp_dict[k] = tuple(hyp_dict[k])
 
@@ -567,8 +572,8 @@ def run():
     }
 
     motion_blur = iaa.MotionBlur(
-                    k=hyp_dict['motion_blur_k'],
-                    angle=hyp_dict['motion_blur_angle']
+                    k=m_blur_kernel,
+                    angle=m_blur_angle
                 )
 
     ## data distribution: num of front imgs in single back img
@@ -627,7 +632,7 @@ def run():
             bool_mask = (segmap.get_arr()>0)
             padded_back_img, bbox = paste_into_img2(
                 img, padded_back_img, padded_rand_coords[i], bool_mask)
-            aug_during_paste(padded_back_img, bbox, bool_mask, motion_blur)
+            aug_during_paste(padded_back_img, bbox, bool_mask, motion_blur, active_chance=m_blur_chance)
             bboxes.append([*bbox, cls_id])
 
         ## crop

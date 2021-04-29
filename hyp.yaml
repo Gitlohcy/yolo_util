@@ -8,8 +8,7 @@ overlap_thereshold: 0.75  # thereshold to remove overlap bbox
 depth_min_size: 0.3   # minimum size depth level resize
 batch_resize: [0.4, 0.8]  # (min, max)
 class_aug: 0.6  # chance for class level optional augmentation
-motion_blur_k: [5,20]   # kernel size range
-motion_blur_angle: [0, 360]   # range
+motion_blur: [0.7, [5,20], [0, 360]]  #chance, kernel_size, angle
 
 max_paste_n: 10   # maximum num of small images to paste in background
 paste_dist: [4, 4.5, 3.5, 3, 1, 1, 1, 1, 1, 1]  # weighted paste_n distribution
