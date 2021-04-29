@@ -472,8 +472,6 @@ def run():
     with open(opt.hyp) as f:
         hyp_dict = yaml.load(f, Loader=yaml.SafeLoader)
 
-    print(f"hyp_dict['hsv_h'][1]:  {hyp_dict['hsv_h'][1]}")
-
     # input
     back_img_path = Path(data_dict['back_img'])
     front_img_path = Path(data_dict['front_img'])
@@ -520,6 +518,14 @@ def run():
     mkdir_if_notExist(lbl_dest)
     mkdir_if_notExist(img_dest)
 
+
+    ## assign tuple for range between (min, max) in imgaug library
+    keys_with_range = ['rotate', 'batch_resize', 
+                        'motion_blur_k', 'motion_blur_angle']
+    for c in 'hsv':
+        hyp_dict['hsv_'+c][1] = tuple(hyp_dict['hsv_'+c][1])
+    for k in keys_with_range:
+        hyp_dict[k] = tuple(hyp_dict[k])
 
     ## init data aug params
     adjust_hsv = iaa.WithColorspace(
