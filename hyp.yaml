@@ -8,5 +8,7 @@ overlap_thereshold: 0.75  # thereshold to remove overlap bbox
 depth_min_size: 0.3   # minimum size depth level resize
 batch_resize: [0.4, 0.8]  # (min, max)
 class_aug: 0.6  # chance for class level optional augmentation
+motion_blur_k: [5,20]   # kernel size range
+motion_blur_angle: [0, 360]   # range
 
 

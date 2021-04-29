@@ -560,7 +560,10 @@ def run():
         14: None,
     }
 
-    motion_blur = iaa.MotionBlur(k=(5,20), angle=(0, 360))
+    motion_blur = iaa.MotionBlur(
+                    k=hyp_dict['motion_blur_k'],
+                    angle=hyp_dict['motion_blur_angle']
+                )
 
     ## data distribution: num of front imgs in single back img
     n_products_dist = np.array(random.choices(
